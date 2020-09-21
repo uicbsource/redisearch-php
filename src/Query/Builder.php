@@ -142,6 +142,13 @@ class Builder implements BuilderInterface
         return $this;
     }
     
+    public function notFieldFilter(string $fieldName, array $values): BuilderInterface
+    {
+        $separatedValues = implode('|', $values);
+        $this->tagFilters[] = "(-@$fieldName:{$separatedValues})";
+        return $this;
+    }
+    
     public function multiFieldFilter(array $fieldNames): BuilderInterface
     {
         $tagFilters = [];
