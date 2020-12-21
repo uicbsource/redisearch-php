@@ -73,6 +73,45 @@ class Index extends AbstractIndex implements IndexInterface
         }
         return $fields;
     }
+    
+    /**
+     * @return mixed
+     * @throws NoFieldsInIndexException
+     */
+    public function update()
+    {
+        $properties = [$this->getIndexName()];
+
+        if ($this->isNoOffsetsEnabled()) {
+            $properties[] = 'NOOFFSETS';
+        }
+        if ($this->isNoFieldsEnabled()) {
+            $properties[] = 'NOFIELDS';
+        }
+        if ($this->isNoFrequenciesEnabled()) {
+            $properties[] = 'NOFREQS';
+        }
+        if (!is_null($this->stopWords)) {
+            $properties[] = 'STOPWORDS';
+            $properties[] = count($this->stopWords);
+            $properties = array_merge($properties, $this->stopWords);
+        }
+        $properties[] = 'SCHEMA';
+        $properties[] = 'ADD';
+
+        $fieldDefinitions = [];
+        foreach (get_object_vars($this) as $field) {
+            if ($field instanceof FieldInterface) {
+                $fieldDefinitions = array_merge($fieldDefinitions, $field->getTypeDefinition());
+            }
+        }
+
+        if (count($fieldDefinitions) === 0) {
+            throw new NoFieldsInIndexException();
+        }
+        
+        return $this->rawCommand('FT.ALTER', array_merge($properties, $fieldDefinitions));
+    }
 
     /**
      * @param string $name
