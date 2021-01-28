@@ -10,6 +10,8 @@ interface IndexInterface extends BuilderInterface
 {
     public function create();
     public function drop();
+    public function update();
+    public function insert($document);
     public function info();
     public function delete($id);
     public function makeDocument($id = null): DocumentInterface;
