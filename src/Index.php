@@ -44,8 +44,11 @@ class Index extends AbstractIndex implements IndexInterface
             $properties[] = count($this->stopWords);
             $properties = array_merge($properties, $this->stopWords);
         }
+        $properties[] = 'PREFIX';
+        // index de redisearch = 10
+        $properties[] = 1;
+        $properties[] = substr($this->getIndexName(), -3).':';
         $properties[] = 'SCHEMA';
-
         $fieldDefinitions = [];
         foreach (get_object_vars($this) as $field) {
             if ($field instanceof FieldInterface) {
@@ -82,20 +85,6 @@ class Index extends AbstractIndex implements IndexInterface
     {
         $properties = [$this->getIndexName()];
 
-        if ($this->isNoOffsetsEnabled()) {
-            $properties[] = 'NOOFFSETS';
-        }
-        if ($this->isNoFieldsEnabled()) {
-            $properties[] = 'NOFIELDS';
-        }
-        if ($this->isNoFrequenciesEnabled()) {
-            $properties[] = 'NOFREQS';
-        }
-        if (!is_null($this->stopWords)) {
-            $properties[] = 'STOPWORDS';
-            $properties[] = count($this->stopWords);
-            $properties = array_merge($properties, $this->stopWords);
-        }
         $properties[] = 'SCHEMA';
         $properties[] = 'ADD';
 
@@ -111,6 +100,15 @@ class Index extends AbstractIndex implements IndexInterface
         }
         
         return $this->rawCommand('FT.ALTER', array_merge($properties, $fieldDefinitions));
+    }
+    
+    /**
+     * @param DocumentInterface $document
+     * @return mixed
+     */
+    public function Insert($document)
+    {
+        return $this->rawCommand('HSET', $document);
     }
 
     /**
